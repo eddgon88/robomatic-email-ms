@@ -6,11 +6,8 @@ class MailService:
     @staticmethod
     async def send_mail(request: SendMailRequestModel):
         conf = get_conection_config()
-        print(conf)
         message = get_message(request)
-        print(message)
         fm = FastMail(conf)
-        print(type(fm))
         await fm.send_message(message)
 
 
@@ -44,8 +41,8 @@ def get_message(request: SendMailRequestModel):
 
 def get_template_message(request: SendMailRequestModel):
     return MessageSchema(
-        subject="Fastapi-Mail module",
-        recipients=request.emailm,
+        subject=request.subject,
+        recipients=request.email,
         template_body=request.body_dict,
         subtype=MessageType.html,
         )

@@ -8,5 +8,5 @@ class SendMailRequestModel(BaseModel):
     subject: str
     body: Optional[str] = None
     body_dict: Optional[dict] = None
-    template_id: Optional[int] = None
+    template_id: Optional[str] = None
     files: Optional[List[str]] = None

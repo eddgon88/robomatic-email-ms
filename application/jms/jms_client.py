@@ -31,6 +31,7 @@ class PikaClient:
         message.ack()
         body = message.body
         print('Received message')
+        print(body)
         if body:
             body_str = body.decode("UTF-8")
             content = ast.literal_eval(body_str)  
