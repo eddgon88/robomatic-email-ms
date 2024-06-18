@@ -1,14 +1,24 @@
 from fastapi import APIRouter
 import asyncio
-from ..jms.jms_client import PikaClient
 from ..services.mail_service import MailService
+from ..models.send_mail_request_model import SendMailRequestModel
+import threading
 
-router = APIRouter(prefix="/emai/v1")
+router = APIRouter(prefix="/email-api/v1")
 
-@router.on_event("startup")
-async def startup():
-    print("start")
-    loop = asyncio.get_running_loop()
-    pikaClient = PikaClient(MailService.send_mail)
-    task = loop.create_task(pikaClient.consume(loop))
-    await task
+async def some_callback(args):
+    await MailService.send_mail(args)
+
+def between_callback(args):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(some_callback(args))
+    loop.close()
+
+@router.post("/send-mail", status_code=200)
+async def consume(params: SendMailRequestModel):
+    threading_execution = threading.Thread(target=between_callback, args=(params,))
+    threading_execution.start()
+    #TestExecutorService.executeTest(params.dict())
+    return True

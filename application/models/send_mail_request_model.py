@@ -1,7 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
-from pydantic import EmailStr, BaseModel
-from typing import List
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 
 class SendMailRequestModel(BaseModel):
     email: List[EmailStr]
