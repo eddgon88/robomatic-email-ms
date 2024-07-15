@@ -4,4 +4,4 @@
 NAME=$(basename "$PWD")
 
 #run the docker
-docker run --name $NAME --network robomatic -p 5006:5006 $NAME
+docker run --name $NAME --network robomatic -p 5006:5006 -v /home/edgar/robomatic/github/robomatic-email-ms/resource:/home/resource $NAME
