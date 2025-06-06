@@ -1,4 +1,6 @@
 import os
+
+import requests
 from ..models.send_mail_request_model import SendMailRequestModel
 import logging
 from pathlib import Path
@@ -17,7 +19,7 @@ class MailService:
     @staticmethod
     def send_mail(request: SendMailRequestModel):
         message = get_message(request)
-        if len(request.files) != 0:
+        if request.files != None and len(request.files) != 0:
             add_attachments(request.files, request.execution_id, message)
         try:
             server = smtplib.SMTP(os.getenv('MAIL_SERVER'), os.getenv('MAIL_PORT'))
@@ -91,15 +93,48 @@ def add_attachments( attachmentArray: List[str], execution_id: str, message):
     attachments = []
     for attachment in attachmentArray:
         try:
-            f = os.path.join(os.getenv('EVIDENCE_FILE_DIR'), execution_id, attachment)
-            with open(f, "rb") as fil:
-                file_part = MIMEApplication(
-                    fil.read(),
-                    Name=basename(f)
-                )
-            file_part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
-            message.attach(file_part)
+            file_part = find_file_part(attachment, execution_id)
+            if file_part:
+                message.attach(file_part)
+            else:
+                logging.error(f'Error fetching file, tring to convert file - {attachment}')
+                attachmentWde = attachment[0:attachment.find(".")]
+                extension = attachment[attachment.find(".")+1:]
+                attachmentTxt = attachmentWde + ".txt"
+                convert_file(attachmentTxt, extension, execution_id)
+                file_part = find_file_part(attachment, execution_id)
+                if file_part:
+                    message.attach(file_part)
+                else:
+                    logging.error(f'Error fetching file - {attachmentTxt}') 
         except Exception as e:
             logging.error(f'Error fetching file - {attachment}: {e}')
     return attachments
+
         
+def find_file_part(file_name: str, execution_id: str):
+    try:
+        f = os.path.join(os.getenv('EVIDENCE_FILE_DIR'), execution_id, file_name)
+        with open(f, "rb") as fil:
+            file_part = MIMEApplication(
+                fil.read(),
+                Name=basename(f)
+            )
+        file_part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
+        return file_part
+    except Exception as e:
+        logging.error(f'Error fetching file - {file_name}: {e}')
+        return None
+    
+def convert_file(file_name: str, file_extension: str, execution_id: str):
+    try:
+        endpoint = os.getenv('FILE_MANAGER_API_URL') + os.getenv('FILE_MANAGER_CONVERT_ENDPOINT')
+        body = {
+            "file_name": file_name,
+            "file_extention": file_extension,
+            "execution_id": execution_id
+        }
+        response = requests.post(endpoint, json=body)
+    except Exception as e:
+        
+        return None

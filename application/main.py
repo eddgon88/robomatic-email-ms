@@ -12,7 +12,8 @@ app_configs = {"title": "email-api",
                "MAIL_SERVER": config.MAIL_SERVER,
                "MAIL_TEMPLATE_FOLDER_DIR": config.MAIL_TEMPLATE_FOLDER_DIR,
                "FILE_MANAGER_API_URL": config.FILE_MANAGER_API_URL,
-               "EVIDENCE_FILE_DIR": config.EVIDENCE_FILE_DIR,}
+               "EVIDENCE_FILE_DIR": config.EVIDENCE_FILE_DIR,
+               "FILE_MANAGER_CONVERT_ENDPOINT": config.FILE_MANAGER_CONVERT_ENDPOINT}
 
 def create_app():
     app = FastAPI(**app_configs)
